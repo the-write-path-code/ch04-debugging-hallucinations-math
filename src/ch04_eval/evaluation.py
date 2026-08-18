@@ -15,6 +15,7 @@ from ch04_eval.schemas import (
     RetrievedChunk,
     SufficiencyResult,
 )
+from ch04_eval.tracing import OpikTracer
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,7 @@ class RAGEvaluator:
         judge: GroundingJudge | None = None,
         policy_gate: PolicyGate | None = None,
         thresholds: PolicyThresholds | None = None,
+        tracer: OpikTracer | None = None,
         settings: Settings | None = None,
     ):
         self.settings = settings or get_settings()
@@ -100,6 +102,7 @@ class RAGEvaluator:
         self.generator = generator or OllamaGenerator(settings=self.settings)
         self.judge = judge or GroundingJudge(settings=self.settings)
         self.policy_gate = policy_gate or PolicyGate(thresholds=thresholds)
+        self.tracer = tracer or OpikTracer(settings=self.settings)
 
     def evaluate_case(
         self,
@@ -161,7 +164,7 @@ class RAGEvaluator:
             evaluation_run_id=test_case.id,
         )
 
-        return EvaluationCaseResult(
+        case_result = EvaluationCaseResult(
             case_id=test_case.id,
             question=test_case.question,
             risk_tier=test_case.risk_tier,
@@ -174,3 +177,9 @@ class RAGEvaluator:
             sufficiency=sufficiency_res,
             policy_decision=policy_decision,
         )
+
+        # Stream trace & spans to Opik Cloud if enabled
+        if self.tracer.is_active():
+            self.tracer.log_evaluation_case(case_result)
+
+        return case_result

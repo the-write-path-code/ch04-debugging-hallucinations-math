@@ -142,5 +142,39 @@ flowchart LR
 
 ---
 
-## 6. Phase 7 & 8 Results: Opik Cloud Traces & End-to-End Scorecard (Upcoming)
-*(To be populated upon Phase 7 & 8 execution)*
+## 6. Phase 7 Results: Opik Cloud Observability & Trace Hierarchy
+
+- **Platform**: Opik Cloud (`https://www.comet.com/opik/`)
+- **Project**: `ch04-debugging-hallucinations-math`
+- **Instrumentation**: 1 root evaluation trace per test case with 6 nested spans and 6 numeric feedback scores.
+
+### Opik Trace and Span Hierarchy
+
+```mermaid
+flowchart TD
+    T["Root Trace: evaluation_case_{id}"]
+    T --> S1["Span 1: span_retrieval (Tool)"]
+    T --> S2["Span 2: span_generation (LLM)"]
+    T --> S3["Span 3: span_ragas_evaluation (General)"]
+    T --> S4["Span 4: span_claim_grounding (LLM Judge)"]
+    T --> S5["Span 5: span_sufficiency_evaluation (LLM Judge)"]
+    T --> S6["Span 6: span_policy_gate (Decision Engine)"]
+
+    T -. Feedback Scores .-> FS["Trace Scores: Recall@5, MRR, Context Precision, Faithfulness, Relevance, Grounding Rate"]
+```
+
+### Logged Opik Metadata & Feedback Scores
+
+| Metric Score Name | Span / Source | Purpose in Opik Dashboard |
+|---|---|---|
+| `recall_at_5` | `span_retrieval` | Tracks whether required evidence is retrieved in top 5 chunks. |
+| `mrr` | `span_retrieval` | Measures ranking efficiency of the first relevant chunk. |
+| `context_precision` | `span_ragas_evaluation` | Evaluates rank-weighted placement of relevant context. |
+| `faithfulness` | `span_ragas_evaluation` | Measures overall factual consistency of generated text. |
+| `answer_relevance` | `span_ragas_evaluation` | Measures intent alignment between prompt and answer. |
+| `claim_grounding_rate` | `span_claim_grounding` | Ratio of mathematically verified atomic claims. |
+
+---
+
+## 7. Phase 8 Results: Consolidated Chapter 4 Scorecard (Upcoming)
+*(To be populated upon Phase 8 execution)*

@@ -1,0 +1,22 @@
+[project]
+name = "ch04-debugging-hallucinations-math"
+version = "0.1.0"
+description = "Chapter 4 companion repository for RAG evaluation, grounding checks, and policy gates."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

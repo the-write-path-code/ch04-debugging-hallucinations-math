@@ -125,7 +125,9 @@ class GroundingJudge:
             prompt = f"Question: {question}\nAnswer: {answer}"
             data = self._call_judge_json(CLAIM_EXTRACTION_PROMPT, prompt)
             claims = data.get("claims", [])
-            return [str(c).strip() for c in claims if str(c).strip()] or split_atomic_claims_fallback(answer)
+            return [
+                str(c).strip() for c in claims if str(c).strip()
+            ] or split_atomic_claims_fallback(answer)
         except Exception as e:  # noqa: BLE001
             logger.warning(f"Judge claim extraction failed ({e}), using rule-based fallback.")
             return split_atomic_claims_fallback(answer)

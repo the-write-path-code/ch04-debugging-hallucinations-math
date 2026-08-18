@@ -5,13 +5,12 @@ import logging
 from ch04_eval.config import Settings, get_settings
 from ch04_eval.generation import OllamaGenerator
 from ch04_eval.grounding import GroundingJudge
+from ch04_eval.policy_gate import PolicyGate, PolicyThresholds
 from ch04_eval.retrieval import BM25Retriever, compute_deterministic_metrics
 from ch04_eval.schemas import (
     EvaluationCaseResult,
     GoldenTestCase,
     GroundingResult,
-    PolicyDecision,
-    PolicyDecisionResult,
     RagasMetrics,
     RetrievedChunk,
     SufficiencyResult,
@@ -52,7 +51,9 @@ def compute_heuristic_ragas_metrics(
             overlap = sum(1 for w in q_words if len(w) > 3 and w in c.text.lower())
             chunk_relevance = min(1.0, overlap / max(1, len(q_words) // 2))
             precision_sum += weight * chunk_relevance
-        context_precision = min(1.0, round(precision_sum / sum(1.0 / i for i in range(1, len(retrieved_chunks) + 1)), 4))
+        context_precision = min(
+            1.0, round(precision_sum / sum(1.0 / i for i in range(1, len(retrieved_chunks) + 1)), 4)
+        )
 
     # 3. Context Recall: Based on sufficiency class
     if sufficiency_result.sufficiency_class.value == "SUFFICIENT":
@@ -65,7 +66,9 @@ def compute_heuristic_ragas_metrics(
     # 4. Answer Relevance: Check question intent coverage and abstention consistency
     if "does not contain information" in answer.lower():
         # If answering out-of-corpus query, abstention is 100% relevant
-        answer_relevance = 1.0 if sufficiency_result.sufficiency_class.value == "INSUFFICIENT" else 0.5
+        answer_relevance = (
+            1.0 if sufficiency_result.sufficiency_class.value == "INSUFFICIENT" else 0.5
+        )
     else:
         # Check answer length and question term presence
         q_terms = [w for w in question.lower().split() if len(w) > 3]
@@ -88,12 +91,15 @@ class RAGEvaluator:
         retriever: BM25Retriever,
         generator: OllamaGenerator | None = None,
         judge: GroundingJudge | None = None,
+        policy_gate: PolicyGate | None = None,
+        thresholds: PolicyThresholds | None = None,
         settings: Settings | None = None,
     ):
         self.settings = settings or get_settings()
         self.retriever = retriever
         self.generator = generator or OllamaGenerator(settings=self.settings)
         self.judge = judge or GroundingJudge(settings=self.settings)
+        self.policy_gate = policy_gate or PolicyGate(thresholds=thresholds)
 
     def evaluate_case(
         self,
@@ -144,43 +150,13 @@ class RAGEvaluator:
             sufficiency_result=sufficiency_res,
         )
 
-        # Layer 5: Policy Gate Decision (Standard rules)
-        # Evaluated deterministically
-        if sufficiency_res.sufficiency_class.value in {"INSUFFICIENT"}:
-            decision = PolicyDecision.ABSTAIN
-            reason = "Retrieved evidence is insufficient for the question."
-        elif sufficiency_res.sufficiency_class.value == "CONFLICTING":
-            decision = PolicyDecision.QUALIFIED_ANSWER if test_case.risk_tier.value != "high" else PolicyDecision.HUMAN_REVIEW
-            reason = "Conflicting policy clauses detected across departments."
-        elif grounding_res.claim_grounding_rate < 0.80 or grounding_res.unsupported_claims > 0:
-            if test_case.risk_tier.value == "high":
-                decision = PolicyDecision.BLOCK
-                reason = "High-risk question contained unsupported claims."
-            else:
-                decision = PolicyDecision.HUMAN_REVIEW
-                reason = "Generated answer contains ungrounded claims."
-        elif sufficiency_res.sufficiency_class.value == "PARTIAL":
-            decision = PolicyDecision.QUALIFIED_ANSWER
-            reason = "Evidence is partial; answer qualified with scope constraints."
-        elif test_case.risk_tier.value == "high" and (ragas_metrics.faithfulness or 1.0) < 0.95:
-            decision = PolicyDecision.HUMAN_REVIEW
-            reason = "High-risk question fell below faithfulness threshold."
-        else:
-            decision = PolicyDecision.ANSWER
-            reason = "Retrieved evidence sufficient and answer fully grounded."
-
-        policy_decision = PolicyDecisionResult(
-            decision=decision,
-            decision_reason=reason,
-            metrics_used={
-                "recall_at_5": deterministic_metrics.recall_at_k,
-                "context_precision": ragas_metrics.context_precision,
-                "faithfulness": ragas_metrics.faithfulness,
-                "claim_grounding_rate": grounding_res.claim_grounding_rate,
-                "sufficiency": sufficiency_res.sufficiency_class.value,
-                "risk_tier": test_case.risk_tier.value,
-            },
-            threshold_version="v1.0",
+        # Layer 5: Policy Gate Decision (Deterministic rules)
+        policy_decision = self.policy_gate.evaluate(
+            risk_tier=test_case.risk_tier,
+            deterministic_metrics=deterministic_metrics,
+            ragas_metrics=ragas_metrics,
+            grounding_result=grounding_res,
+            sufficiency_result=sufficiency_res,
             corpus_version=retrieval_res.corpus_version,
             evaluation_run_id=test_case.id,
         )

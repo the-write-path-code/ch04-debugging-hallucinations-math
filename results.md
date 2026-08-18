@@ -103,8 +103,42 @@ flowchart LR
 
 ---
 
-## 5. Phase 6 Results: Policy Gate Decisions (Upcoming)
-*(To be populated upon Phase 6 execution)*
+## 5. Phase 6 Results: Policy Gate Decisions & Calibration Matrix
+
+- **Engine**: Deterministic, rule-driven `PolicyGate` (Zero LLM calls inside gate)
+- **Profile Applied**: `v1.0-standard` (Grounding Min: 0.95, High-Risk Grounding Min: 0.98, Faithfulness Min: 0.90)
+- **Decision Outcomes**: `ANSWER`, `QUALIFIED_ANSWER`, `ABSTAIN`, `BLOCK`, `HUMAN_REVIEW`
+
+### Final Policy Decisions by Case
+
+| Case ID | Risk Tier | Evidence Sufficiency | Claim Grounding | Faithfulness | Final Policy Decision | Decision Rationale |
+|---|---|---|---:|---:|---|---|
+| **case-001** | low | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | All sufficiency and grounding thresholds satisfied. |
+| **case-002** | low | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | All sufficiency and grounding thresholds satisfied. |
+| **case-003** | medium | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | Active 2026 policy selected; fully grounded. |
+| **case-004** | medium | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | Departmental exception identified and grounded. |
+| **case-005** | medium | `INSUFFICIENT` | **1.00** | **1.00** | **`ABSTAIN`** | Retrieved evidence is insufficient; system abstained safely. |
+| **case-006** | high | `INSUFFICIENT` | **1.00** | **1.00** | **`ABSTAIN`** | High-risk out-of-corpus query; system abstained safely. |
+| **case-007** | low | `INSUFFICIENT` | **1.00** | **1.00** | **`ABSTAIN`** | International flight rules absent; system abstained safely. |
+| **case-008** | high | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | High-risk strict incident timelines fully grounded. |
+| **case-009** | high | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | High-risk data retention requirements fully grounded. |
+| **case-010** | medium | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | Moonlighting limits and approvals fully grounded. |
+| **case-011** | high | `INSUFFICIENT` | **0.75** | **0.75** | **`ABSTAIN`** | Insufficient evidence for CapEx signing limits; abstained. |
+| **case-012** | medium | `SUFFICIENT` | **1.00** | **1.00** | **`ANSWER`** | 30/60 day expense limits and CFO waiver fully grounded. |
+
+### Policy Threshold Calibration Matrix
+
+| Profile | Risk Tier | Answer | Qualify | Abstain | Block | Review | False Pass | False Block |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| **v1.0-standard** | LOW | 2 | 0 | 1 | 0 | 0 | **0** | **0** |
+| **v1.0-standard** | MEDIUM | 4 | 0 | 1 | 0 | 0 | **0** | **0** |
+| **v1.0-standard** | HIGH | 2 | 0 | 2 | 0 | 0 | **0** | **0** |
+| **v1.1-strict** | LOW | 2 | 0 | 1 | 0 | 0 | **0** | **0** |
+| **v1.1-strict** | MEDIUM | 4 | 0 | 1 | 0 | 0 | **0** | **0** |
+| **v1.1-strict** | HIGH | 2 | 0 | 2 | 0 | 0 | **0** | **0** |
+
+> [!NOTE]
+> **Calibration Status**: Provisional. Validated against the 12-case golden baseline. Production freeze requires empirical human review audit labels.
 
 ---
 

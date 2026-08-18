@@ -29,7 +29,9 @@ def run_evaluation_pipeline() -> pd.DataFrame:
     for _, row in df_golden.iterrows():
         rel_docs = []
         if pd.notna(row["relevant_document_ids"]):
-            rel_docs = [d.strip() for d in str(row["relevant_document_ids"]).split(";") if d.strip()]
+            rel_docs = [
+                d.strip() for d in str(row["relevant_document_ids"]).split(";") if d.strip()
+            ]
 
         test_case = GoldenTestCase(
             id=str(row["id"]),
@@ -44,17 +46,19 @@ def run_evaluation_pipeline() -> pd.DataFrame:
 
         res = evaluator.evaluate_case(test_case=test_case, top_k=5)
 
-        records.append({
-            "Case ID": res.case_id,
-            "Risk": res.risk_tier.value,
-            "Recall@5": res.deterministic_metrics.recall_at_k,
-            "Ctx Precision": res.ragas_metrics.context_precision,
-            "Faithfulness": res.ragas_metrics.faithfulness,
-            "Relevance": res.ragas_metrics.answer_relevance,
-            "Grounding": res.grounding.claim_grounding_rate,
-            "Sufficiency": res.sufficiency.sufficiency_class.value,
-            "Policy Decision": res.policy_decision.decision.value,
-        })
+        records.append(
+            {
+                "Case ID": res.case_id,
+                "Risk": res.risk_tier.value,
+                "Recall@5": res.deterministic_metrics.recall_at_k,
+                "Ctx Precision": res.ragas_metrics.context_precision,
+                "Faithfulness": res.ragas_metrics.faithfulness,
+                "Relevance": res.ragas_metrics.answer_relevance,
+                "Grounding": res.grounding.claim_grounding_rate,
+                "Sufficiency": res.sufficiency.sufficiency_class.value,
+                "Policy Decision": res.policy_decision.decision.value,
+            }
+        )
 
         jsonl_lines.append(res.model_dump())
 

@@ -1,0 +1,14 @@
+flowchart TD
+    X["Observed Output\n(e.g., 'Answer states: 90 days')"] --> C1{"1. Was the current policy document retrieved?\n[Metric: Recall@5, MRR]"}
+
+    C1 -->|No| R1["Retrieval Failure\n• Fix BM25/vector ranking\n• Fix chunking boundaries\n• Expand corpus coverage"]
+    C1 -->|Yes| C2{"2. Did the retrieved text state 90 days?\n[Metric: Claim Grounding Rate, Faithfulness]"}
+
+    C2 -->|No| R2["Grounding / Fabrication Failure\n• Fix generation prompt\n• Enforce [doc#chunk] citation extraction\n• Block ungrounded atomic claims"]
+    C2 -->|Yes| C3{"3. Was the source current and sufficient?\n[Metric: Sufficiency Class (Active vs Stale)]"}
+
+    C3 -->|No| R3["Sufficiency / Recency Failure\n• Superseded policy detected (e.g., 2024 vs 2026)\n• Safe Abstention (ABSTAIN) or Human Escalation"]
+    C3 -->|Yes| C4{"4. Did it answer the exact claim type & jurisdiction?\n[Metric: Answer Relevancy, Context Precision]"}
+
+    C4 -->|No| R4["Scope / Relevance Failure\n• Fix query intent understanding\n• Constrain departmental exception boundaries"]
+    C4 -->|Yes| R5["Grounded & Verified Answer\n• Return ANSWER with verified citation tokens"]

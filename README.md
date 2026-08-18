@@ -50,24 +50,30 @@ cp .env.example .env
 uv sync
 ```
 
-### 3. Run Pipeline Scripts
+### 3. Run Everything (Single Command)
 ```bash
-# Ingest and inspect the policy corpus (23 chunks across 10 documents)
+# Run the complete end-to-end pipeline in one go
+uv run python scripts/run_all.py
+```
+
+### 4. Or Run Individual Pipeline Steps
+```bash
+# 1. Ingest and inspect the policy corpus (23 chunks across 10 documents)
 uv run python scripts/ingest_corpus.py
 
-# Run the interactive demo showing all 4 policy gate outcomes
+# 2. Run the interactive demo showing all 4 policy gate outcomes
 uv run python scripts/run_demo.py
 
-# Execute full multi-layer evaluation and stream traces to Opik Cloud
+# 3. Execute full multi-layer evaluation and stream traces to Opik Cloud
 uv run python scripts/run_evaluation.py
 
-# Evaluate policy threshold calibration matrices
+# 4. Evaluate policy threshold calibration matrices
 uv run python scripts/calibrate_thresholds.py
 
-# Export evaluation scorecard to CSV (data/artifacts/scorecard.csv)
+# 5. Export evaluation scorecard to CSV (data/artifacts/scorecard.csv)
 uv run python scripts/export_scorecard.py
 
-# Run complete test suite (unit tests + live cloud tests)
+# 6. Run complete test suite (unit tests + live cloud tests)
 uv run pytest
 ```
 
@@ -103,20 +109,42 @@ Every execution is logged as an Opik trace with **6 nested spans** and **6 numer
 
 ---
 
+## The Chapter 4 Debugging Philosophy: Hallucination Root Cause Triage
+
+When an enterprise RAG system produces an incorrect or misleading statement, the failure almost never stems from a single mysterious "hallucination." Instead, it is the result of a specific breakdown in one of the pipeline stages.
+
+Chapter 4 introduces this systematic triage decision tree to diagnose the exact root cause:
+
+```mermaid
+flowchart TD
+    X["Observed Output\n(e.g., 'Answer states: 90 days')"] --> C1{"1. Was current policy retrieved?\n[Metric: Recall@5, MRR]"}
+
+    C1 -->|No| R1["Retrieval Failure\n• Fix BM25/vector ranking\n• Fix chunk boundaries\n• Expand corpus coverage"]
+    C1 -->|Yes| C2{"2. Did retrieved text state 90 days?\n[Metric: Claim Grounding, Faithfulness]"}
+
+    C2 -->|No| R2["Grounding / Fabrication Failure\n• Fix generation prompt\n• Enforce [doc#chunk] citations\n• Intercept ungrounded claims"]
+    C2 -->|Yes| C3{"3. Was source current & sufficient?\n[Metric: Sufficiency Class (Active vs Stale)]"}
+
+    C3 -->|No| R3["Sufficiency / Recency Failure\n• Superseded policy detected (e.g., 2024 vs 2026)\n• Safe Abstention (ABSTAIN) or Escalation"]
+    C3 -->|Yes| C4{"4. Did it answer exact claim & jurisdiction?\n[Metric: Answer Relevancy, Context Precision]"}
+
+    C4 -->|No| R4["Scope / Relevance Failure\n• Fix query intent understanding\n• Constrain departmental boundaries"]
+    C4 -->|Yes| R5["Grounded & Verified Answer\n• Return ANSWER with verified citations"]
+```
+
+---
+
 ## Project Structure
 
 ```text
 ch04-debugging-hallucinations-math/
 ├── README.md                                 # Overview and execution instructions
-├── IMPLEMENTATION_PLAN.md                    # Detailed architectural plan
 ├── pyproject.toml                            # Pinned uv project dependencies
 ├── results.md                                # Single consolidated scorecard report
 ├── data/
 │   ├── source/sample_policy_corpus.md        # 10 policy documents (23 chunks)
 │   ├── golden/golden_dataset_small.csv       # 12 golden test cases across risk tiers
 │   └── artifacts/                            # Evaluation output dumps (JSONL/CSV)
-├── notebooks/
-│   └── 01_rag_metrics_deep_dive.ipynb        # Step-by-step educational walkthrough
 ├── src/ch04_eval/
 │   ├── config.py                             # Pydantic settings & validation
 │   ├── schemas.py                            # Pydantic models & enums
@@ -128,14 +156,17 @@ ch04-debugging-hallucinations-math/
 │   ├── evaluation.py                         # Ragas metric adapter & orchestrator
 │   └── tracing.py                            # Opik Cloud trace & span manager
 ├── scripts/
+│   ├── run_all.py                            # Single-command end-to-end runner
 │   ├── ingest_corpus.py                      # Corpus ingestion CLI
 │   ├── run_demo.py                           # 4-decision demonstration
 │   ├── run_evaluation.py                     # Full evaluation runner & Opik upload
 │   ├── calibrate_thresholds.py               # Threshold calibration matrix
 │   └── export_scorecard.py                   # Scorecard CSV exporter
 ├── tests/                                    # 36 automated unit & integration tests
-├── workflow/                                 # Mermaid architecture diagrams
-└── docs/
-    ├── chapter_mapping.md                    # Book concept to code mapping
-    └── reuse_ledger.md                       # Compliance & source attribution ledger
+└── workflow/                                 # Mermaid architecture & triage diagrams
+    ├── 00_hallucination_root_cause_triage.mmd
+    ├── 01_evaluation_layers.mmd
+    ├── 02_opik_trace_and_score_flow.mmd
+    ├── 03_policy_gate.mmd
+    └── 04_threshold_calibration.mmd
 ```

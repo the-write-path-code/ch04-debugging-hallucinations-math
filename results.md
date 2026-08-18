@@ -52,8 +52,29 @@ flowchart LR
 
 ---
 
-## 3. Phase 4 Results: Generation & Citations (Upcoming)
-*(To be populated upon Phase 4 execution)*
+## 3. Phase 4 Results: Generation & Citations
+
+- **Generator Model**: `gpt-oss:20b` (via Ollama Cloud)
+- **Prompt Version**: `2026.1-v1`
+- **Citation Policy**: Strict source attribution using `[doc_id#chunk_num]` tags
+- **Raw Run Output Artifact**: `data/artifacts/generation_runs.jsonl`
+
+### Generation Scorecard
+
+| Case ID | Risk Tier | Should Answer | Citations Extracted | Generated Answer Summary | Citation Grounding Status |
+|---|---|---|---|---|---|
+| **case-001** | low | True | `HR-2026-01#001` | Core hours are 10:00 AM to 3:00 PM Eastern, Monday–Thursday; Friday is deep-work. | Valid citation attached |
+| **case-002** | low | True | `HR-2026-03#002` | Anonymous reports via Ethics Hotline ext. 8888 or ethics@acmecorp.internal (24/7). | Valid citation attached |
+| **case-003** | medium | True | *(None)* | Correctly identifies $90/day per diem ($20 breakfast, $25 lunch, $45 dinner) from active 2026 policy. | Correct factual grounding (stale 2024 rejected) |
+| **case-004** | medium | True | `OPS-2026-04#001` | Field research technicians receive $3,500 rugged hardware stipend (superseding $1,500). | Valid citation attached |
+| **case-005** | medium | False | *(None)* | *"The provided policy documentation does not contain information regarding paid parental leave..."* | Correct abstention statement |
+| **case-006** | high | False | *(None)* | *"The provided policy documentation does not contain information regarding pet insurance..."* | Correct abstention statement |
+| **case-007** | low | partial | *(None)* | States domestic flights >5h qualify for business class, notes international under 5h is unspecified. | Correct qualification statement |
+| **case-008** | high | True | `SEC-2026-03#002` | Incident Commander must notify executive leadership, legal, and DPO within 60 minutes. | Valid citation attached |
+| **case-009** | high | True | `SEC-2026-01#001` | Customer records retained in encrypted cold storage for 7 years; cryptographic erasure within 48h. | Valid citation attached |
+| **case-010** | medium | True | `HR-2026-01#002` | Moonlighting capped at 10h/week, non-competitive, no company IP/hardware, VP approval needed. | Valid citation attached |
+| **case-011** | high | False | `FIN-2026-04#001` | Inferred VP $100k PO authority for CapEx from procurement policy (unsupported leap). | Candidate for Block/Review Gate |
+| **case-012** | medium | True | `FIN-2026-03#003` | 30-day submission window; automatic rejection after 60 calendar days without written CFO waiver. | Valid citation attached |
 
 ---
 

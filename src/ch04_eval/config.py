@@ -17,8 +17,16 @@ class Settings(BaseSettings):
     # Ollama Cloud Configuration
     ollama_api_key: str | None = None
     ollama_base_url: str = "https://api.ollama.com"
-    ollama_model: str = "llama3.2"
-    ollama_judge_model: str = "llama3.2"
+    ollama_model: str = "gpt-oss:20b"
+    ollama_judge_model: str = "gpt-oss:20b"
+
+    def get_effective_model(self) -> str:
+        """Return configured model or default to gpt-oss:20b."""
+        return (self.ollama_model or "").strip() or "gpt-oss:20b"
+
+    def get_effective_judge_model(self) -> str:
+        """Return configured judge model or default to gpt-oss:20b."""
+        return (self.ollama_judge_model or "").strip() or "gpt-oss:20b"
 
     # Opik Cloud Configuration
     opik_api_key: str | None = None

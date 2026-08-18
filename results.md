@@ -78,8 +78,28 @@ flowchart LR
 
 ---
 
-## 4. Phase 5 Results: Ragas & Grounding Metrics (Upcoming)
-*(To be populated upon Phase 5 execution)*
+## 4. Phase 5 Results: Ragas & Grounding Metrics
+
+- **Evaluation Judges**: Ollama Cloud (`gpt-oss:20b`) for claim decomposition, atomic verdicts, and evidence sufficiency
+- **Metric Suite**: Ragas vocabulary (Context Precision, Context Recall, Faithfulness, Relevancy) + Claim Grounding Rate + Sufficiency Classification
+- **Raw Run Output Artifact**: `data/artifacts/evaluation_results.jsonl`
+
+### Multi-Layer Evaluation Scorecard
+
+| Case ID | Risk Tier | Recall@5 | Context Precision | Faithfulness | Answer Relevancy | Claim Grounding | Sufficiency Class | Interim Decision |
+|---|---|---:|---:|---:|---:|---:|---|---|
+| **case-001** | low | **1.00** | 0.6569 | **1.00** | 0.7857 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-002** | low | **1.00** | 0.6526 | **1.00** | 0.9167 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-003** | medium | **1.00** | 0.6290 | **1.00** | 0.8125 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-004** | medium | **1.00** | 0.5292 | **1.00** | 0.8750 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-005** | medium | 0.00 | 0.1521 | **1.00** | **1.0000** | **1.00** | `INSUFFICIENT` | **ABSTAIN** |
+| **case-006** | high | 0.00 | 0.5237 | **1.00** | **1.0000** | **1.00** | `INSUFFICIENT` | **ABSTAIN** |
+| **case-007** | low | **1.00** | 0.7182 | **1.00** | **1.0000** | **1.00** | `INSUFFICIENT` | **ABSTAIN** |
+| **case-008** | high | **1.00** | 0.5808 | **1.00** | 0.7000 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-009** | high | **1.00** | 0.3710 | **1.00** | 0.8125 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-010** | medium | **1.00** | 0.2190 | **1.00** | 0.8000 | **1.00** | `SUFFICIENT` | **ANSWER** |
+| **case-011** | high | 0.00 | 0.0647 | **0.75** | 0.8500 | **0.75** | `INSUFFICIENT` | **ABSTAIN** |
+| **case-012** | medium | **1.00** | 0.4015 | **1.00** | 0.7000 | **1.00** | `SUFFICIENT` | **ANSWER** |
 
 ---
 

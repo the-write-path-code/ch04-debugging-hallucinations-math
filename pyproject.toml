@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.28.1",
+    "langchain-community<0.4.0",
+    "langchain-google-vertexai>=3.2.4",
     "ollama>=0.6.2",
     "opik>=2.2.30",
     "pandas>=3.0.5",

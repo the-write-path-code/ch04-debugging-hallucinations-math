@@ -4,10 +4,28 @@ version = "0.1.0"
 description = "Chapter 4 companion repository for RAG evaluation, grounding checks, and policy gates."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "ollama>=0.6.2",
+    "opik>=2.2.30",
+    "pandas>=3.0.5",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "python-dotenv>=1.2.3",
+    "ragas>=0.4.3",
+    "tabulate>=0.10.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ch04_eval"]
 
 [dependency-groups]
 dev = [
+  "ipykernel>=7.3.0",
   "pytest>=8.0",
   "pytest-asyncio>=0.24",
   "ruff>=0.8",

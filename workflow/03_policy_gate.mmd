@@ -1,0 +1,21 @@
+flowchart TD
+    IN["Evaluation Signals:\n• Sufficiency Class\n• Claim Grounding Rate\n• Faithfulness\n• Risk Tier (low / medium / high)"]
+    
+    IN --> C1{"Sufficiency == INSUFFICIENT?"}
+    C1 -->|Yes| D_ABSTAIN["ABSTAIN\n(Safe Refusal)"]
+    
+    C1 -->|No| C2{"Sufficiency == CONFLICTING?"}
+    C2 -->|Yes & High Risk| D_REVIEW1["HUMAN_REVIEW\n(High-Risk Policy Conflict)"]
+    C2 -->|Yes & Low/Med Risk| D_QUAL1["QUALIFIED_ANSWER\n(Exception Scope Stated)"]
+    
+    C2 -->|No| C3{"Risk == HIGH and\n(Grounding < 0.98 or Faithfulness < 0.95)?"}
+    C3 -->|Yes| D_REVIEW2["HUMAN_REVIEW\n(High-Risk Threshold Breach)"]
+    
+    C3 -->|No| C4{"Grounding < 0.95 or\nUnsupported Claims > 0?"}
+    C4 -->|Yes & High Risk| D_BLOCK["BLOCK\n(Interception: Ungrounded High-Risk Claim)"]
+    C4 -->|Yes & Med/Low Risk| D_REVIEW3["BLOCK / HUMAN_REVIEW\n(Ungrounded Claims Detected)"]
+    
+    C4 -->|No| C5{"Sufficiency == PARTIAL?"}
+    C5 -->|Yes| D_QUAL2["QUALIFIED_ANSWER\n(Partial Evidence Scope)"]
+    
+    C5 -->|No| D_ANSWER["ANSWER\n(Fully Grounded & Sufficient)"]

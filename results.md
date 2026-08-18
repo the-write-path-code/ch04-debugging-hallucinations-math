@@ -176,5 +176,43 @@ flowchart TD
 
 ---
 
-## 7. Phase 8 Results: Consolidated Chapter 4 Scorecard (Upcoming)
-*(To be populated upon Phase 8 execution)*
+## 7. Phase 8 Results: Consolidated Chapter 4 Scorecard
+
+- **Corpus Version**: `2026.1` (10 documents, 23 chunks)
+- **Generator**: `gpt-oss:20b` (Ollama Cloud)
+- **Observability**: Opik Cloud project `ch04-debugging-hallucinations-math`
+- **Output Artifact**: `data/artifacts/scorecard.csv`
+
+### Final Production-Ready Scorecard
+
+| Case ID | Risk Tier | Scenario / Test Focus | Recall@5 | MRR | Context Precision | Faithfulness | Claim Grounding | Sufficiency Class | Final Policy Decision |
+|---|---|---|---:|---:|---:|---:|---:|---|---|
+| **case-001** | low | Core Remote Collaboration Hours | **1.00** | **1.00** | 0.6569 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-002** | low | 24/7 Anonymous Ethics Hotline | **1.00** | **1.00** | 0.6526 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-003** | medium | Stale 2024 vs Active 2026 Per Diem | **1.00** | 0.50 | 0.6290 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-004** | medium | Autonomous Sensing Field Stipend ($3.5k) | **1.00** | **1.00** | 0.5292 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-005** | medium | Paid Parental Leave Duration (Out of Corpus) | 0.00 | 0.00 | 0.1521 | **1.00** | **1.00** | `INSUFFICIENT` | **`ABSTAIN`** |
+| **case-006** | high | Pet Insurance Reimbursement (Out of Corpus) | 0.00 | 0.00 | 0.5237 | **1.00** | **1.00** | `INSUFFICIENT` | **`ABSTAIN`** |
+| **case-007** | low | International Flight Class Rules (Partial) | **1.00** | **1.00** | 0.7182 | **1.00** | **1.00** | `INSUFFICIENT` | **`ABSTAIN`** |
+| **case-008** | high | Severity 1 60-min Incident Escalation | **1.00** | **1.00** | 0.5808 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-009** | high | 7-Year PII Cold Storage & 48h Erasure | **1.00** | **1.00** | 0.3710 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-010** | medium | Moonlighting 10h/Week Restrictions | **1.00** | **1.00** | 0.2190 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+| **case-011** | high | VP Capital Expenditure Signing Limit | 0.00 | 0.00 | 0.0647 | **1.00** | **1.00** | `INSUFFICIENT` | **`ABSTAIN`** |
+| **case-012** | medium | Travel Expense 30/60-Day Deadlines | **1.00** | **1.00** | 0.4015 | **1.00** | **1.00** | `SUFFICIENT` | **`ANSWER`** |
+
+---
+
+## 8. Five Core Questions Answered Separately
+
+As mandated by Chapter 4, this repository does not collapse evaluation into a single aggregate score:
+
+1. **Did retrieval find and rank the needed evidence?**
+   - Measured deterministically via **Recall@5** and **MRR**. Answerable queries achieved Recall@5 = 1.00, while out-of-corpus queries correctly returned 0.00.
+2. **Was the retrieved evidence relevant and sufficient?**
+   - Measured by **Ragas Context Precision** ($0.21 - 0.72$) and the **Evidence Sufficiency Judge** (`SUFFICIENT` vs `INSUFFICIENT`).
+3. **Did the generated answer remain supported by that evidence?**
+   - Measured by atomic **Claim-Level Grounding Rate** and **Ragas Faithfulness**.
+4. **Did the answer address the question and match expected facts?**
+   - Measured by **Answer Relevancy** ($0.70 - 1.00$) and prompt intent coverage.
+5. **Given evidence and scores, should the system answer, qualify, abstain, block, or escalate?**
+   - Enforced by the deterministic zero-LLM **Policy Gate** (`ANSWER`, `QUALIFIED_ANSWER`, `ABSTAIN`, `BLOCK`, `HUMAN_REVIEW`).

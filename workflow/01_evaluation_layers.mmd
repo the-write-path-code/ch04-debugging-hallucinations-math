@@ -1,0 +1,18 @@
+flowchart LR
+    Q["User Question"] --> RET["1. Deterministic Retrieval\n(BM25 Okapi top-5)"]
+    RET --> GEN["2. Grounded Generation\n(Ollama Cloud with Citations)"]
+    RET --> RM["Layer 1: Deterministic Metrics\n(Recall@5, Precision@5, MRR)"]
+    
+    GEN --> RAGAS["Layer 2: Ragas Metrics\n(Context Precision, Context Recall,\nFaithfulness, Relevancy)"]
+    GEN --> CLAIM["Layer 3: Claim Grounding Judge\n(Decomposition & Claim Rate)"]
+    RET --> SUFF["Layer 4: Evidence Sufficiency Judge\n(SUFFICIENT, PARTIAL, INSUFFICIENT, CONFLICTING)"]
+    
+    RM --> GATE["Layer 5: Deterministic Policy Gate\n(Rule Engine & Thresholds)"]
+    RAGAS --> GATE
+    CLAIM --> GATE
+    SUFF --> GATE
+    
+    GATE -->|Sufficient & Grounded| ANS["ANSWER\n(Grounded with [doc#chunk] Citations)"]
+    GATE -->|Partial Evidence / Conflict| QUAL["QUALIFIED_ANSWER\n(Bounded Scope & Explicit Exceptions)"]
+    GATE -->|Insufficient Evidence| ABST["ABSTAIN\n(Safe Refusal: Policy Does Not Contain Info)"]
+    GATE -->|Ungrounded Claims / High Risk| BLOCK["BLOCK / HUMAN_REVIEW\n(Interception & Review Queue)"]

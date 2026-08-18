@@ -1,0 +1,10 @@
+flowchart LR
+    GOLDEN["Golden Evaluation Dataset\n(12 Cases with Risk Tiers)"] --> EVAL["Multi-Layer Evaluation Run\n(Retrieval, Judge, Grounding)"]
+    EVAL --> PROFILES["Candidate Threshold Profiles:\n• v1.0-standard\n• v1.1-strict-safety\n• v1.2-exploratory"]
+    
+    PROFILES --> MATRIX["Decision Distribution Matrix by Risk Tier\n(Low, Medium, High)"]
+    MATRIX --> ERROR_ANALYSIS["Safety Error Rate Metrics:\n• False Pass (Allowed answers for ungrounded cases)\n• False Block (Blocked valid answers)"]
+    
+    ERROR_ANALYSIS --> CALIB_STATUS{"Human Review Audit Data Present?"}
+    CALIB_STATUS -->|No| PROV["PROVISIONAL CALIBRATION\n(Benchmarked against Golden Dataset)"]
+    CALIB_STATUS -->|Yes| PROD["PRODUCTION-FROZEN THRESHOLDS\n(Validated by Empirical Human Labels)"]

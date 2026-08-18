@@ -1,0 +1,11 @@
+flowchart TD
+    T["Opik Root Trace: evaluation_case_{id}\n(Tags: risk, decision, sufficiency)"]
+    
+    T --> S1["Span: span_retrieval (Tool)\n• Input: Query\n• Output: Ranked Chunk IDs\n• Metadata: Recall@5, MRR"]
+    T --> S2["Span: span_generation (LLM)\n• Input: Context Excerpts\n• Output: Answer & Citations\n• Metadata: Model, Prompt Version"]
+    T --> S3["Span: span_ragas_evaluation (General)\n• Metrics: Context Precision, Context Recall,\n  Faithfulness, Relevance"]
+    T --> S4["Span: span_claim_grounding (LLM Judge)\n• Input: Decomposed Atomic Claims\n• Output: Verdicts & Claim Grounding Rate"]
+    T --> S5["Span: span_sufficiency_evaluation (LLM Judge)\n• Output: Sufficiency Class & Rationale"]
+    T --> S6["Span: span_policy_gate (General)\n• Output: Final Decision & Reason\n• Metadata: Threshold Version"]
+    
+    T -. Feedback Scores .-> FS["Opik Dashboard Metric Scores:\n1. recall_at_5\n2. mrr\n3. context_precision\n4. faithfulness\n5. answer_relevance\n6. claim_grounding_rate"]

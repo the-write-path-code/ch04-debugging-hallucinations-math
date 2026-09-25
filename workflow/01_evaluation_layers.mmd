@@ -1,3 +1,5 @@
+%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
+
 flowchart LR
     Q["User Question"] --> RET["1. Deterministic Retrieval\n(BM25 Okapi top-5)"]
     RET --> GEN["2. Grounded Generation\n(Ollama Cloud with Citations)"]

@@ -1,3 +1,5 @@
+%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
+
 flowchart LR
     GOLDEN["Golden Evaluation Dataset\n(12 Cases with Risk Tiers)"] --> EVAL["Multi-Layer Evaluation Run\n(Retrieval, Judge, Grounding)"]
     EVAL --> PROFILES["Candidate Threshold Profiles:\n• v1.0-standard\n• v1.1-strict-safety\n• v1.2-exploratory"]

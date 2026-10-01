@@ -1,13 +1,34 @@
-%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
-
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "26px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
 flowchart TD
-    T["Opik Root Trace: evaluation_case_{id}\n(Tags: risk, decision, sufficiency)"]
-    
-    T --> S1["Span: span_retrieval (Tool)\n• Input: Query\n• Output: Ranked Chunk IDs\n• Metadata: Recall@5, MRR"]
-    T --> S2["Span: span_generation (LLM)\n• Input: Context Excerpts\n• Output: Answer & Citations\n• Metadata: Model, Prompt Version"]
-    T --> S3["Span: span_ragas_evaluation (General)\n• Metrics: Context Precision, Context Recall,\n  Faithfulness, Relevance"]
-    T --> S4["Span: span_claim_grounding (LLM Judge)\n• Input: Decomposed Atomic Claims\n• Output: Verdicts & Claim Grounding Rate"]
-    T --> S5["Span: span_sufficiency_evaluation (LLM Judge)\n• Output: Sufficiency Class & Rationale"]
-    T --> S6["Span: span_policy_gate (General)\n• Output: Final Decision & Reason\n• Metadata: Threshold Version"]
-    
-    T -. Feedback Scores .-> FS["Opik Dashboard Metric Scores:\n1. recall_at_5\n2. mrr\n3. context_precision\n4. faithfulness\n5. answer_relevance\n6. claim_grounding_rate"]
+    T["Opik Root Trace: evaluation_case_{id}<br/>(Tags: risk_tier, final_decision, sufficiency_class)"]
+
+    subgraph Exec ["1. Pipeline Execution Spans"]
+        direction LR
+        S1["span_retrieval (Tool)<br/>Query → Ranked Chunks (Recall@5, MRR)"] --> S2["span_generation (LLM)<br/>Context → Answer & Citations (Model, Prompt)"]
+    end
+
+    subgraph Judges ["2. Evaluation & Judge Spans"]
+        direction LR
+        S3["span_ragas (General)<br/>Precision & Faithfulness"] --> S4["span_grounding (Judge)<br/>Atomic Claims & Grounding Rate"] --> S5["span_sufficiency (Judge)<br/>Sufficiency Class & Rationale"]
+    end
+
+    subgraph Gate ["3. Policy Gate & Metric Logging"]
+        direction LR
+        S6["span_policy_gate (General)<br/>Final Decision & Reason (Threshold v1.1)"] -. Logged Scores .-> FS["Feedback Scores Dashboard:<br/>recall@5, mrr, precision, faithfulness, relevancy, grounding"]
+    end
+
+    T --> Exec
+    Exec --> Judges
+    Judges --> Gate
+
+    classDef trace fill:#EDE9FE,stroke:#7C3AED,color:#000000,stroke-width:1.5px
+    classDef pipe fill:#EBF5FF,stroke:#2563EB,color:#000000,stroke-width:1.5px
+    classDef judge fill:#FEF3C7,stroke:#D97706,color:#000000,stroke-width:1.5px
+    classDef gate fill:#DCFCE7,stroke:#15803D,color:#000000,stroke-width:1.5px
+    classDef score fill:#F3F4F6,stroke:#4B5563,color:#000000,stroke-width:1.5px
+
+    class T trace
+    class S1,S2 pipe
+    class S3,S4,S5 judge
+    class S6 gate
+    class FS score

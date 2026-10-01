@@ -1,23 +1,25 @@
-%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "64px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
+flowchart LR
+    subgraph Col1 ["Phase A: Sufficiency & Risk Thresholds"]
+        direction TB
+        R1["<b>Rule 1: Insufficient</b><br/>Sufficiency == INSUFFICIENT<br/>➔ <b>ABSTAIN</b> (Safe Refusal)"]
+        R2["<b>Rule 2: Conflicting</b><br/>Sufficiency == CONFLICTING<br/>➔ High: <b>HUMAN_REVIEW</b><br/>➔ Low/Med: <b>QUALIFIED</b>"]
+        R3["<b>Rule 3: High-Risk Breach</b><br/>Risk HIGH &<br/>(Ground < 0.98 or Faith < 0.95)<br/>➔ <b>HUMAN_REVIEW</b>"]
+        R1 -->|Passed| R2 -->|Passed| R3
+    end
 
-flowchart TD
-    IN["Evaluation Signals:\n• Sufficiency Class\n• Claim Grounding Rate\n• Faithfulness\n• Risk Tier (low / medium / high)"]
-    
-    IN --> C1{"Sufficiency == INSUFFICIENT?"}
-    C1 -->|Yes| D_ABSTAIN["ABSTAIN\n(Safe Refusal)"]
-    
-    C1 -->|No| C2{"Sufficiency == CONFLICTING?"}
-    C2 -->|Yes & High Risk| D_REVIEW1["HUMAN_REVIEW\n(High-Risk Policy Conflict)"]
-    C2 -->|Yes & Low/Med Risk| D_QUAL1["QUALIFIED_ANSWER\n(Exception Scope Stated)"]
-    
-    C2 -->|No| C3{"Risk == HIGH and\n(Grounding < 0.98 or Faithfulness < 0.95)?"}
-    C3 -->|Yes| D_REVIEW2["HUMAN_REVIEW\n(High-Risk Threshold Breach)"]
-    
-    C3 -->|No| C4{"Grounding < 0.95 or\nUnsupported Claims > 0?"}
-    C4 -->|Yes & High Risk| D_BLOCK["BLOCK\n(Interception: Ungrounded High-Risk Claim)"]
-    C4 -->|Yes & Med/Low Risk| D_REVIEW3["BLOCK / HUMAN_REVIEW\n(Ungrounded Claims Detected)"]
-    
-    C4 -->|No| C5{"Sufficiency == PARTIAL?"}
-    C5 -->|Yes| D_QUAL2["QUALIFIED_ANSWER\n(Partial Evidence Scope)"]
-    
-    C5 -->|No| D_ANSWER["ANSWER\n(Fully Grounded & Sufficient)"]
+    subgraph Col2 ["Phase B: Grounding & Verified Outcomes"]
+        direction TB
+        R4["<b>Rule 4: Ungrounded Claims</b><br/>Ground < 0.95 or Claims > 0<br/>➔ High Risk: <b>BLOCK</b><br/>➔ Low/Med: <b>BLOCK/REVIEW</b>"]
+        R5["<b>Rule 5: Partial Sufficiency</b><br/>Sufficiency == PARTIAL<br/>➔ <b>QUALIFIED_ANSWER</b>"]
+        R6["<b>Rule 6: Verified Answer</b><br/>All Safety Rules Satisfied<br/>➔ <b>ANSWER</b> ([doc#chunk])"]
+        R4 -->|Passed| R5 -->|Passed| R6
+    end
+
+    Col1 -->|Passed| Col2
+
+    classDef ruleNode fill:#FEF9C3,stroke:#CA8A04,color:#000000,stroke-width:1.5px
+    classDef passNode fill:#DCFCE7,stroke:#15803D,color:#000000,stroke-width:1.5px
+
+    class R1,R2,R3,R4,R5 ruleNode
+    class R6 passNode

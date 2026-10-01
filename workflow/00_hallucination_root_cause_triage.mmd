@@ -1,16 +1,31 @@
-%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
-
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "48px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
 flowchart TD
-    X["Observed Output\n(e.g., 'Answer states: 90 days')"] --> C1{"1. Was the current policy document retrieved?\n[Metric: Recall@5, MRR]"}
+    X["Observed Output: 'Answer states: 90 days'"]
 
-    C1 -->|No| R1["Retrieval Failure\n• Fix BM25/vector ranking\n• Fix chunking boundaries\n• Expand corpus coverage"]
-    C1 -->|Yes| C2{"2. Did the retrieved text state 90 days?\n[Metric: Claim Grounding Rate, Faithfulness]"}
+    subgraph P1 ["Phase 1: Retrieval & Grounding Triage"]
+        direction LR
+        C1{"1. Document Retrieved?<br/>[Recall@5, MRR]"} -->|Yes| C2{"2. Text Stated 90 Days?<br/>[Grounding, Faithfulness]"}
+        C1 -->|No| R1["Retrieval Failure<br/>• Fix ranking & chunking"]
+        C2 -->|No| R2["Grounding Failure<br/>• Enforce [doc#chunk] tokens"]
+    end
 
-    C2 -->|No| R2["Grounding / Fabrication Failure\n• Fix generation prompt\n• Enforce [doc#chunk] citation extraction\n• Block ungrounded atomic claims"]
-    C2 -->|Yes| C3{"3. Was the source current and sufficient?\n[Metric: Sufficiency Class (Active vs Stale)]"}
+    subgraph P2 ["Phase 2: Sufficiency & Scope Triage"]
+        direction LR
+        C3{"3. Current & Sufficient?<br/>[Sufficiency Class]"} -->|Yes| C4{"4. Exact Scope Match?<br/>[Relevancy, Precision]"}
+        C3 -->|No| R3["Sufficiency Failure<br/>• Stale policy detected"]
+        C4 -->|No| R4["Scope Failure<br/>• Exception bounds"]
+        C4 -->|Yes| R5["Grounded & Verified Answer<br/>• Verified citations"]
+    end
 
-    C3 -->|No| R3["Sufficiency / Recency Failure\n• Superseded policy detected (e.g., 2024 vs 2026)\n• Safe Abstention (ABSTAIN) or Human Escalation"]
-    C3 -->|Yes| C4{"4. Did it answer the exact claim type & jurisdiction?\n[Metric: Answer Relevancy, Context Precision]"}
+    X --> P1
+    P1 --> P2
 
-    C4 -->|No| R4["Scope / Relevance Failure\n• Fix query intent understanding\n• Constrain departmental exception boundaries"]
-    C4 -->|Yes| R5["Grounded & Verified Answer\n• Return ANSWER with verified citation tokens"]
+    classDef obs fill:#F3F4F6,stroke:#4B5563,color:#000000,stroke-width:1.5px
+    classDef check fill:#FEF9C3,stroke:#CA8A04,color:#000000,stroke-width:1.5px
+    classDef fail fill:#FEE2E2,stroke:#DC2626,color:#000000,stroke-width:1.5px
+    classDef pass fill:#DCFCE7,stroke:#15803D,color:#000000,stroke-width:1.5px
+
+    class X obs
+    class C1,C2,C3,C4 check
+    class R1,R2,R3,R4 fail
+    class R5 pass

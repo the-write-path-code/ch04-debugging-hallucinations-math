@@ -1,12 +1,34 @@
-%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "11px", "actorFontSize": "11px", "noteFontSize": "10px", "messageFontSize": "10px"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "32px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
+flowchart TD
+    subgraph Tier1 ["Stage 1: Dataset & Evaluation Pipeline"]
+        direction LR
+        GOLDEN["Golden Evaluation Dataset<br/>(12 Cases with Risk Tiers)"] --> EVAL["Multi-Layer Evaluation Run<br/>(Retrieval, Judge, Grounding)"]
+    end
 
-flowchart LR
-    GOLDEN["Golden Evaluation Dataset\n(12 Cases with Risk Tiers)"] --> EVAL["Multi-Layer Evaluation Run\n(Retrieval, Judge, Grounding)"]
-    EVAL --> PROFILES["Candidate Threshold Profiles:\n• v1.0-standard\n• v1.1-strict-safety\n• v1.2-exploratory"]
-    
-    PROFILES --> MATRIX["Decision Distribution Matrix by Risk Tier\n(Low, Medium, High)"]
-    MATRIX --> ERROR_ANALYSIS["Safety Error Rate Metrics:\n• False Pass (Allowed answers for ungrounded cases)\n• False Block (Blocked valid answers)"]
-    
-    ERROR_ANALYSIS --> CALIB_STATUS{"Human Review Audit Data Present?"}
-    CALIB_STATUS -->|No| PROV["PROVISIONAL CALIBRATION\n(Benchmarked against Golden Dataset)"]
-    CALIB_STATUS -->|Yes| PROD["PRODUCTION-FROZEN THRESHOLDS\n(Validated by Empirical Human Labels)"]
+    subgraph Tier2 ["Stage 2: Candidate Profiles & Error Matrix"]
+        direction LR
+        PROFILES["Candidate Threshold Profiles:<br/>• v1.0-standard<br/>• v1.1-strict-safety<br/>• v1.2-exploratory"] --> MATRIX["Decision Distribution Matrix<br/>by Risk Tier (Low, Med, High)"]
+        MATRIX --> ERROR["Safety Error Rate Metrics:<br/>• False Pass (allowed ungrounded)<br/>• False Block (blocked valid)"]
+    end
+
+    subgraph Tier3 ["Stage 3: Calibration Governance & Production Readiness"]
+        direction LR
+        CALIB{"Human Review Audit<br/>Data Present?"}
+        CALIB -->|No| PROV["PROVISIONAL CALIBRATION<br/>(Benchmarked against Golden Set)"]
+        CALIB -->|Yes| PROD["PRODUCTION-FROZEN THRESHOLDS<br/>(Validated by Human Labels)"]
+    end
+
+    Tier1 --> Tier2
+    Tier2 --> Tier3
+
+    classDef stage fill:#EBF5FF,stroke:#2563EB,color:#000000,stroke-width:1.5px
+    classDef profile fill:#EDE9FE,stroke:#7C3AED,color:#000000,stroke-width:1.5px
+    classDef check fill:#FEF9C3,stroke:#CA8A04,color:#000000,stroke-width:1.5px
+    classDef prov fill:#FEF3C7,stroke:#D97706,color:#000000,stroke-width:1.5px
+    classDef prod fill:#DCFCE7,stroke:#15803D,color:#000000,stroke-width:1.5px
+
+    class GOLDEN,EVAL stage
+    class PROFILES,MATRIX,ERROR profile
+    class CALIB check
+    class PROV prov
+    class PROD prod

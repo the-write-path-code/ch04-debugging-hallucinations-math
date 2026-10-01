@@ -1,27 +1,19 @@
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "32px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "72px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
 flowchart TD
-    subgraph Pipe ["Execution Pipeline"]
-        direction LR
-        Q["User Question"] --> RET["1. Retrieval (BM25 Okapi)"] --> GEN["2. Generation (with Citations)"]
-    end
+    Q["User Question"] --> RET["1. Deterministic Retrieval (BM25 Okapi top-5)"]
+    RET -->|Retrieved Chunks| GEN["2. Grounded Generation (LLM with Citations)"]
 
-    subgraph Eval ["Four-Layer Evaluation Stack"]
+    subgraph EvalStack ["Four-Layer Evaluation Stack"]
         direction LR
-        subgraph ColA ["Retrieval & Sufficiency"]
-            direction TB
-            L1["Layer 1: Deterministic Metrics<br/>Recall@5, Precision@5, MRR"]
-            L4["Layer 4: Evidence Sufficiency<br/>Sufficient, Partial, Conflicting"]
-        end
-        subgraph ColB ["Generation & Grounding"]
-            direction TB
-            L2["Layer 2: Ragas Metrics<br/>Context Precision, Faithfulness"]
-            L3["Layer 3: Claim Grounding Judge<br/>Atomic Claims & Grounding Rate"]
-        end
+        L1["Layer 1: Deterministic Metrics<br/>Recall@5, Precision@5, MRR"]
+        L4["Layer 4: Evidence Sufficiency<br/>Sufficient, Partial, Conflicting"]
+        L2["Layer 2: Ragas Metrics<br/>Context Precision, Faithfulness"]
+        L3["Layer 3: Claim Grounding Judge<br/>Atomic Claims & Grounding Rate"]
     end
 
     GATE["Layer 5: Deterministic Policy Gate (Rule Engine & Calibrated Thresholds)"]
 
-    subgraph Dec ["Deterministic Decisions"]
+    subgraph Outcomes ["Deterministic Decisions"]
         direction LR
         ANS["ANSWER<br/>Verified [doc#chunk]"]
         QUAL["QUALIFIED_ANSWER<br/>Bounded Scope"]
@@ -29,9 +21,20 @@ flowchart TD
         BLOCK["BLOCK / ESCALATE<br/>Human Review Queue"]
     end
 
-    Pipe --> Eval
-    Eval --> GATE
-    GATE --> Dec
+    RET -->|Chunks| L1
+    RET -->|Chunks| L4
+    GEN -->|Answer| L2
+    GEN -->|Answer| L3
+
+    L1 --> GATE
+    L4 --> GATE
+    L2 --> GATE
+    L3 --> GATE
+
+    GATE --> ANS
+    GATE --> QUAL
+    GATE --> ABST
+    GATE --> BLOCK
 
     classDef pipe fill:#EBF5FF,stroke:#2563EB,color:#000000,stroke-width:1.5px
     classDef layer fill:#EDE9FE,stroke:#7C3AED,color:#000000,stroke-width:1.5px

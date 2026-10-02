@@ -1,35 +1,47 @@
-%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "72px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif", "fontSize": "22px", "primaryTextColor": "#000000", "lineColor": "#4B5563"}}}%%
 flowchart TD
-    Q["User Question"] --> RET["1. Deterministic Retrieval (BM25 Okapi top-5)"]
-    RET -->|Retrieved Chunks| GEN["2. Grounded Generation (LLM with Citations)"]
+    Q["<div style='min-width: 860px;'><b>User Question</b></div>"]
+    RET["<div style='min-width: 860px;'><b>1. Deterministic Retrieval (BM25 Okapi top-5)</b><br/>Retrieves candidate reference chunks from indexed corpus</div>"]
+    GEN["<div style='min-width: 860px;'><b>2. Grounded Generation (LLM with Citations)</b><br/>Synthesizes answer strictly anchored to retrieved citations [doc#chunk]</div>"]
+
+    Q --> RET
+    RET -->|"Retrieved Chunks"| GEN
 
     subgraph EvalStack ["Four-Layer Evaluation Stack"]
         direction LR
-        L1["Layer 1: Deterministic Metrics<br/>Recall@5, Precision@5, MRR"]
-        L4["Layer 4: Evidence Sufficiency<br/>Sufficient, Partial, Conflicting"]
-        L2["Layer 2: Ragas Metrics<br/>Context Precision, Faithfulness"]
-        L3["Layer 3: Claim Grounding Judge<br/>Atomic Claims & Grounding Rate"]
+        subgraph ColRet ["Retrieval Verification"]
+            direction TB
+            L1["<div style='min-width: 400px;'><b>Layer 1: Deterministic Metrics</b><br/>Recall@5 &bull; Precision@5 &bull; MRR</div>"]
+            L4["<div style='min-width: 400px;'><b>Layer 4: Evidence Sufficiency</b><br/>Sufficient &bull; Partial &bull; Conflicting</div>"]
+            L1 ~~~ L4
+        end
+        subgraph ColGen ["Generation Verification"]
+            direction TB
+            L2["<div style='min-width: 400px;'><b>Layer 2: Ragas Metrics</b><br/>Context Precision &bull; Faithfulness</div>"]
+            L3["<div style='min-width: 400px;'><b>Layer 3: Claim Grounding Judge</b><br/>Atomic Claims &bull; Grounding Rate</div>"]
+            L2 ~~~ L3
+        end
     end
 
-    GATE["Layer 5: Deterministic Policy Gate (Rule Engine & Calibrated Thresholds)"]
+    RET -->|"Chunks"| L1
+    RET -->|"Chunks"| L4
+    GEN -->|"Answer"| L2
+    GEN -->|"Answer"| L3
 
-    subgraph Outcomes ["Deterministic Decisions"]
-        direction LR
-        ANS["ANSWER<br/>Verified [doc#chunk]"]
-        QUAL["QUALIFIED_ANSWER<br/>Bounded Scope"]
-        ABST["ABSTAIN<br/>Safe Refusal"]
-        BLOCK["BLOCK / ESCALATE<br/>Human Review Queue"]
-    end
-
-    RET -->|Chunks| L1
-    RET -->|Chunks| L4
-    GEN -->|Answer| L2
-    GEN -->|Answer| L3
+    GATE["<div style='min-width: 860px;'><b>Layer 5: Deterministic Policy Gate (Rule Engine &amp; Calibrated Thresholds)</b><br/>Evaluates multi-layer scores against calibrated policy boundaries</div>"]
 
     L1 --> GATE
     L4 --> GATE
     L2 --> GATE
     L3 --> GATE
+
+    subgraph Outcomes ["Deterministic Decisions"]
+        direction LR
+        ANS["<div style='min-width: 240px;'><b>ANSWER</b><br/>Verified [doc#chunk]</div>"]
+        QUAL["<div style='min-width: 240px;'><b>QUALIFIED_ANSWER</b><br/>Bounded Scope</div>"]
+        ABST["<div style='min-width: 240px;'><b>ABSTAIN</b><br/>Safe Refusal</div>"]
+        BLOCK["<div style='min-width: 240px;'><b>BLOCK / ESCALATE</b><br/>Human Review Queue</div>"]
+    end
 
     GATE --> ANS
     GATE --> QUAL

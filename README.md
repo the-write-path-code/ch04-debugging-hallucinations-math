@@ -2,7 +2,7 @@
 
 Companion code for *Building Safe Agentic AI for Enterprise Systems* by Mohit Aggarwal.
 
-This repository evaluates a policy-compliance RAG system through a fixed five-layer stack. It separates retrieval failure, unsupported claims, insufficient or conflicting evidence, and scope errors before a deterministic policy gate chooses one outcome: `ANSWER`, `QUALIFIED_ANSWER`, `ABSTAIN`, `BLOCK`, or `HUMAN_REVIEW`.
+This repository evaluates a policy-compliance RAG system through a fixed five-layer stack. It separates retrieval failure, unsupported claims, insufficient or conflicting evidence, and scope errors before a deterministic policy gate chooses one outcome: `ANSWER`, `QUALIFIED_ANSWER`, `ABSTAIN`, `BLOCK`, or `HUMAN_REVIEW`. You can also explore the chapter's [interactive workflow diagrams](#architecture-and-workflow-diagrams) directly in your browser.
 
 The main lesson is that “the RAG system hallucinated” is not a diagnosis. A wrong answer can begin with the wrong retrieval result, a claim that the evidence does not support, a superseded document, insufficient evidence, or a response to the wrong policy scope. Each failure needs a different correction.
 
@@ -214,22 +214,33 @@ Run the full suite before changing a threshold, a golden case, an evaluation for
 │   ├── export_scorecard.py
 │   └── run_all.py
 ├── tests/
-└── workflow/
+└── workflow/                          # Workflow documentation and interactive HTML diagrams
+    ├── 00_hallucination_root_cause_triage.html
+    ├── 01_evaluation_layers.html
+    ├── 02_opik_trace_and_score_flow.html
+    ├── 03_policy_gate.html
+    ├── 04_threshold_calibration.html
     ├── 00_hallucination_root_cause_triage.mmd
-    └── ...                           # Five-layer, tracing, gate, and calibration diagrams
+    ├── 01_evaluation_layers.mmd
+    ├── 02_opik_trace_and_score_flow.mmd
+    ├── 03_policy_gate.mmd
+    └── 04_threshold_calibration.mmd
 ```
 
-## Architecture Diagrams and Supporting Documents
+<a id="architecture-and-workflow-diagrams"></a>
+## Architecture and Workflow Diagrams
 
-The `workflow/` directory contains the diagrams used in Chapter 4, including:
+The `workflow/` directory contains interactive HTML diagrams alongside companion Mermaid source files (`*.mmd`) detailing the root-cause triage, five-layer evaluation stack, Opik tracing, deterministic policy gate, and threshold calibration explored in Chapter 4:
 
-- The root-cause triage for a single wrong answer.
-- The five-layer evaluation stack.
-- The trace-and-score structure for one case.
-- The deterministic policy-gate rule cascade.
-- The threshold-calibration workflow.
+- [`00_hallucination_root_cause_triage.html`](https://the-write-path-code.github.io/ch04-debugging-hallucinations-math/workflow/00_hallucination_root_cause_triage.html) shows the systematic root-cause triage sequence for diagnosing wrong answers across retrieval, grounding, sufficiency, and scope.
+- [`01_evaluation_layers.html`](https://the-write-path-code.github.io/ch04-debugging-hallucinations-math/workflow/01_evaluation_layers.html) shows the complete five-layer evaluation stack and multi-judge assembly feeding the deterministic policy gate.
+- [`02_opik_trace_and_score_flow.html`](https://the-write-path-code.github.io/ch04-debugging-hallucinations-math/workflow/02_opik_trace_and_score_flow.html) shows the hierarchical Opik root trace, execution and judge spans, and feedback score telemetry dashboard.
+- [`03_policy_gate.html`](https://the-write-path-code.github.io/ch04-debugging-hallucinations-math/workflow/03_policy_gate.html) shows the six-rule deterministic policy gate cascade routing cases to verified answers, qualified bounds, abstentions, or human review.
+- [`04_threshold_calibration.html`](https://the-write-path-code.github.io/ch04-debugging-hallucinations-math/workflow/04_threshold_calibration.html) shows the candidate threshold calibration workflow, safety error rate matrix, and production freezing governance.
 
-The source modules map directly to these diagrams. Start with `workflow/00_hallucination_root_cause_triage.mmd` when a case produces an unexpected answer or action.
+The interactive `.html` files in `workflow/` can be opened directly in your browser using the links above (hosted via GitHub Pages with pan, zoom, dark/light theme, and animation support), or opened locally in any modern browser. The accompanying Mermaid `.mmd` files in `workflow/` preserve the original diagram specifications.
+
+The source modules map directly to these diagrams. Start with `workflow/00_hallucination_root_cause_triage.html` when a case produces an unexpected answer or action.
 
 ## Safety and Operational Limits
 
